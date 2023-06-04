@@ -1,0 +1,57 @@
+-- Configuration
+local detectionRadius = 12  -- Radius within which the character detects players
+local teleportOffset = Vector3.new(0, 0, -2)  -- Offset for teleporting behind the player
+local keybind = Enum.KeyCode.E  -- Key to bind the teleport action
+
+-- Function to handle player detection and teleportation
+local function detectAndTeleport()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+
+    if not character then
+        return
+    end
+    
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        return
+    end
+    
+    local players = game.Players:GetPlayers()
+    
+    for _, otherPlayer in ipairs(players) do
+        if otherPlayer ~= player then
+            local otherCharacter = otherPlayer.Character
+            if otherCharacter then
+                local otherRootPart = otherCharacter:FindFirstChild("HumanoidRootPart")
+                local otherHumanoid = otherCharacter:FindFirstChild("Humanoid")
+                if otherRootPart and otherHumanoid and otherHumanoid.Health > 0 then
+                    local distance = (otherRootPart.Position - humanoidRootPart.Position).Magnitude
+                    if distance <= detectionRadius then
+                        if distance <= 4 then
+                            if distance <= 2 then
+                                return  -- Stop teleporting if player is within 2 stud radius
+                            else
+                                character:SetPrimaryPartCFrame(otherRootPart.CFrame)
+                                return  -- Look at the player if they are within 4 stud radius
+                            end
+                        end
+                        
+                        local teleportPosition = otherRootPart.Position + (otherRootPart.CFrame.LookVector * teleportOffset.Z) + (otherRootPart.CFrame.RightVector * teleportOffset.X)
+                        humanoidRootPart.CFrame = CFrame.new(teleportPosition)
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Function to handle key press event
+local function onKeyPress(input)
+    if input.KeyCode == keybind then
+        detectAndTeleport()
+    end
+end
+
+-- Bind key press event
+game:GetService("UserInputService").InputBegan:Connect(onKeyPress)
