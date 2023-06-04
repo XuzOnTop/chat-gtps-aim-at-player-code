@@ -1,0 +1,45 @@
+-- Configuration
+local lookSpeed = 2  -- Speed at which the character rotates to face the target player
+local lookRadius = 40  -- Radius within which the character looks at other players
+
+-- Function to handle character orientation
+local function lookAtPlayer()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+
+    if not character then
+        return
+    end
+    
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then
+        return
+    end
+    
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then
+        return
+    end
+    
+    local players = game.Players:GetPlayers()
+    
+    for _, otherPlayer in ipairs(players) do
+        if otherPlayer ~= player then
+            local otherCharacter = otherPlayer.Character
+            if otherCharacter then
+                local otherRootPart = otherCharacter:FindFirstChild("HumanoidRootPart")
+                if otherRootPart then
+                    local distance = (otherRootPart.Position - rootPart.Position).Magnitude
+                    if distance <= lookRadius then
+                        local lookVector = (otherRootPart.Position - rootPart.Position).Unit
+                        local rotation = CFrame.new(rootPart.Position, rootPart.Position + lookVector)
+                        rootPart.CFrame = rootPart.CFrame:Lerp(rotation, lookSpeed)
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Call the lookAtPlayer function repeatedly
+game:GetService("RunService").Heartbeat:Connect(lookAtPlayer)
