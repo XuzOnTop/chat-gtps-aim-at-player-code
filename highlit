@@ -1,0 +1,54 @@
+local Players = game:GetService("Players")
+
+local radius = 15
+
+local highlightPart = Instance.new("Part")
+highlightPart.Name = "HighlightPart"
+highlightPart.Transparency = 0.5
+highlightPart.Anchored = true
+highlightPart.CanCollide = false
+highlightPart.Size = Vector3.new(3, 6, 3)
+highlightPart.BrickColor = BrickColor.new("Bright yellow")
+
+local function highlightPlayer(player)
+    local character = player.Character
+    if character then
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            local highlightPartClone = highlightPart:Clone()
+            highlightPartClone.CFrame = humanoidRootPart.CFrame
+            highlightPartClone.Parent = workspace
+            highlightPartClone.Adornee = humanoidRootPart
+        end
+    end
+end
+
+local function unhighlightPlayers()
+    for _, part in ipairs(workspace:GetChildren()) do
+        if part:IsA("Part") and part.Name == "HighlightPart" then
+            part:Destroy()
+        end
+    end
+end
+
+game:GetService("RunService").Heartbeat:Connect(function()
+    local localPlayer = Players.LocalPlayer
+    if localPlayer then
+        local character = localPlayer.Character
+        if character then
+            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+                unhighlightPlayers()
+                
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= localPlayer and player.Character then
+                        local distance = (humanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                        if distance <= radius then
+                            highlightPlayer(player)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
