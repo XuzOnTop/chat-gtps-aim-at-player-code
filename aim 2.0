@@ -1,0 +1,65 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local aimingEnabled = false
+local aimingPart = nil
+local radius = 15
+
+local function toggleAiming()
+    aimingEnabled = not aimingEnabled
+    if aimingEnabled then
+        aimingPart = Instance.new("Part")
+        aimingPart.Name = "AimingPart"
+        aimingPart.Transparency = 1
+        aimingPart.Anchored = true
+        aimingPart.CanCollide = false
+        aimingPart.Size = Vector3.new(0.2, 0.2, 0.2)
+        aimingPart.Parent = workspace
+    else
+        if aimingPart then
+            aimingPart:Destroy()
+            aimingPart = nil
+        end
+    end
+end
+
+UserInputService.InputBegan:Connect(function(input, isProcessed)
+    if isProcessed then return end
+    if input.KeyCode == Enum.KeyCode.Q then
+        toggleAiming()
+    end
+end)
+
+local function getClosestPlayer()
+    local character = Players.LocalPlayer.Character
+    if not character then return nil end
+    
+    local closestPlayer = nil
+    local closestDistance = math.huge
+    
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer and player.Character then
+            local distance = (character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+            if distance <= radius and distance < closestDistance then
+                closestPlayer = player
+                closestDistance = distance
+            end
+        end
+    end
+    
+    return closestPlayer
+end
+
+game:GetService("RunService").Heartbeat:Connect(function()
+    if aimingEnabled then
+        local closestPlayer = getClosestPlayer()
+        
+        if closestPlayer then
+            local targetPosition = closestPlayer.Character.HumanoidRootPart.Position
+            local targetDirection = (targetPosition - Players.LocalPlayer.Character.HumanoidRootPart.Position).Unit
+            
+            aimingPart.CFrame = CFrame.new(Players.LocalPlayer.Character.HumanoidRootPart.Position, targetPosition)
+            Players.LocalPlayer.Character.HumanoidRootPart.CFrame = aimingPart.CFrame
+        end
+    end
+end)
