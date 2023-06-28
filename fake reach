@@ -1,0 +1,24 @@
+-- Get the player's character
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- Create the part and set its properties
+local part = Instance.new("Part")
+part.Shape = Enum.PartType.Ball
+part.Size = Vector3.new(11, 12, 12)
+part.BrickColor = BrickColor.new("Bright red")
+part.Transparency = 0.4 -- Adjust transparency as desired
+
+-- Set the part's position in front of the character
+local offset = Vector3.new(0, 0, -7) -- Adjust the offset as needed
+part.CFrame = character.HumanoidRootPart.CFrame * CFrame.new(offset)
+
+-- Insert the part into the workspace
+part.Parent = workspace
+
+-- Update the part's position continuously to follow the character
+game:GetService("RunService").RenderStepped:Connect(function()
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        part.CFrame = character.HumanoidRootPart.CFrame * CFrame.new(offset)
+    end
+end)
